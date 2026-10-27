@@ -1,0 +1,53 @@
+clip_id,dataset,split,category,object_id,box,prompt,fps,t_ev,frames,license
+0018_cut_pepper_5,m3vos,,topology,1,365 224 414 410,green chili pepper,30,100,,Apache-2.0
+0030_cut_celery_2,m3vos,,topology,1,488 713 619 783,celery,30,71,,Apache-2.0
+0060_pour_water_1,m3vos,,topology,1,748 549 997 625,water in the wooden bowl,30,94,,Apache-2.0
+0109_break_glass_1,m3vos,,topology,1,751 0 1110 734,green glass bottle,30,8,,Apache-2.0
+0113_tearing_cabbage_1,m3vos,,topology,1,719 273 960 617,cabbage leaf,30,2,,Apache-2.0
+0158_melt_glue_block_1,m3vos,,topology,1,526 420 656 553,transparent glue block,30,236,,Apache-2.0
+0239_exhaust_smoke_1,m3vos,,topology,1,278 470 1919 907,smoke,30,0,,Apache-2.0
+0428_pour_tea_8,m3vos,,topology,1,0 36 187 530,tea,30,6,,Apache-2.0
+1207_break_garlic,vost,val,topology,1,881 760 1025 909,garlic bulb,5,12,,CC BY-NC-SA 4.0
+3316_peel_onion,vost,val,topology,1,879 570 1076 793,onion,5,11,,CC BY-NC-SA 4.0
+3559_break_egg,vost,val,topology,1,614 653 748 767,egg,5,33,,CC BY-NC-SA 4.0
+555_tear_aluminium_foil,vost,val,topology,1,877 740 1042 1079,aluminium foil roll,5,3,,CC BY-NC-SA 4.0
+8013_divide_dough,vost,val,topology,1,488 285 741 528,dough,5,12,,CC BY-NC-SA 4.0
+8267_pour_flour,vost,val,topology,1,336 836 1309 1079,flour bag,5,17,,CC BY-NC-SA 4.0
+rallye,davis,train,scale,1,247 253 284 279,rally car,24,28,,CC BY-NC 4.0
+drift-turn,davis,train,scale,1,218 173 352 252,drifting car,24,38,,CC BY-NC 4.0
+night-race,davis,train,scale,2,261 202 369 263,sports car,24,31,,CC BY-NC 4.0
+motocross-jump,davis,val,scale,2,554 210 647 316,dirt bike,24,7,,CC BY-NC 4.0
+upside-down,davis,train,scale,1,11 59 537 479,man with sunglasses,24,36,,CC BY-NC 4.0
+car-turn,davis,train,scale,1,700 212 800 304,silver SUV,24,40,,CC BY-NC 4.0
+drift-chicane,davis,val,scale,1,144 216 226 260,white race car,24,42,,CC BY-NC 4.0
+drift-straight,davis,val,scale,1,590 200 688 260,red car,24,21,,CC BY-NC 4.0
+motocross-bumps,davis,train,scale,2,297 277 359 314,dirt bike,24,11,,CC BY-NC 4.0
+mbike-trick,davis,val,scale,2,420 213 481 304,motorcycle,24,46,,CC BY-NC 4.0
+soapbox,davis,val,scale,1,166 84 277 174,soapbox cart,24,34,,CC BY-NC 4.0
+helicopter,vot,,scale,1,341 220 570 374,helicopter,30,367,,VOT research use
+graduate,vot,,scale,1,274 67 300 136,running man,30,340,,VOT research use
+singer3,vot,,scale,1,446 178 486 222,singer head,30,30,117,VOT research use
+car-shadow,davis,val,illumination,1,313 88 654 281,silver car,24,22,,CC BY-NC 4.0
+mallard-fly,davis,train,illumination,1,239 226 417 371,duck,24,51,,CC BY-NC 4.0
+shooting,davis,val,illumination,1,450 151 662 479,gun,24,2,,CC BY-NC 4.0
+bag,vot,,illumination,1,506 324 651 500,plastic bag,30,138,,VOT research use
+shaking,vot,,illumination,1,232 137 286 205,head with hat,30,56,,VOT research use
+singer2,vot,,illumination,1,287 152 389 350,singer,30,227,323,VOT research use
+fernando,vot,,illumination,1,134 2 230 336,siamese cat,30,54,,VOT research use
+birds2,vot,,illumination,1,615 430 883 474,flying crane,30,16,,VOT research use
+gymnastics2,vot,,illumination,1,647 268 679 409,gymnast,30,162,,VOT research use
+gymnastics3,vot,,illumination,1,175 334 239 479,gymnast,30,20,,VOT research use
+bear,davis,train,control,1,96 214 464 434,bear,24,,,CC BY-NC 4.0
+blackswan,davis,val,control,1,127 73 509 384,black swan,24,,,CC BY-NC 4.0
+elephant,davis,train,control,1,254 88 557 416,elephant,24,,,CC BY-NC 4.0
+rhino,davis,train,control,1,138 148 630 413,rhino,24,,,CC BY-NC 4.0
+boat,davis,train,control,1,265 142 697 312,boat,24,,,CC BY-NC 4.0
+hike,davis,train,control,1,413 140 577 428,hiker,24,,,CC BY-NC 4.0
+lucia,davis,train,control,1,275 84 376 431,woman in black dress,24,,,CC BY-NC 4.0
+rollerblade,davis,train,control,1,94 89 194 381,girl on rollerblades,24,,,CC BY-NC 4.0
+mallard-water,davis,train,control,1,274 125 609 267,duck,24,,,CC BY-NC 4.0
+goat,davis,val,control,1,349 71 565 389,goat,24,,,CC BY-NC 4.0
+car-roundabout,davis,val,control,1,250 177 689 357,grey car,24,,,CC BY-NC 4.0
+car1,vot,,control,1,242 164 359 278,white SUV,30,,,VOT research use
+rabbit2,vot,,control,1,387 196 490 332,hare,30,,,VOT research use
+snake,vot,,control,1,820 500 1003 841,sea snake,30,,,VOT research use

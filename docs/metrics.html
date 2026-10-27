@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Breaking SAM 2 Metrics</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"
+  onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}]})"></script>
+<style>
+  :root {
+    --bg: #fbfaf7; --surface: #ffffff; --text: #1d1f24; --muted: #5d6270;
+    --border: #e2e0da; --accent: #2f5bd3; --accent-soft: #e8eefc;
+    --gt: #2a9d6f; --pred: #d9822b; --overlap: #6b5bd3; --bad: #c8453b; --bad-soft: #fbe9e7;
+    --good-soft: #e5f4ec;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #15171c; --surface: #1d2027; --text: #e7e8ec; --muted: #a0a5b3;
+      --border: #333844; --accent: #86a6ff; --accent-soft: #232c45;
+      --gt: #4cc493; --pred: #f0a35a; --overlap: #a194ff; --bad: #f07b70; --bad-soft: #3a2422;
+      --good-soft: #1f3329;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #15171c; --surface: #1d2027; --text: #e7e8ec; --muted: #a0a5b3;
+    --border: #333844; --accent: #86a6ff; --accent-soft: #232c45;
+    --gt: #4cc493; --pred: #f0a35a; --overlap: #a194ff; --bad: #f07b70; --bad-soft: #3a2422;
+    --good-soft: #1f3329;
+  }
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    margin: 0; background: var(--bg); color: var(--text);
+    font: 16px/1.65 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  }
+  .wrap { max-width: 860px; margin: 0 auto; padding: 32px 16px 80px; }
+  header h1 { font-size: 2rem; line-height: 1.2; margin: 0 0 8px; letter-spacing: -0.01em; }
+  header p { color: var(--muted); margin: 0; }
+  nav.toc {
+    margin: 24px 0 8px; padding: 12px 16px; border: 1px solid var(--border);
+    border-radius: 10px; background: var(--surface); font-size: 0.93rem;
+  }
+  nav.toc a { color: var(--accent); text-decoration: none; margin-right: 14px; white-space: nowrap; }
+  h2 { font-size: 1.45rem; margin: 48px 0 12px; padding-top: 12px; border-top: 1px solid var(--border); }
+  h3 { font-size: 1.12rem; margin: 32px 0 8px; }
+  h3 code { font-size: 0.95em; }
+  code { font: 0.9em ui-monospace, SFMono-Regular, Menlo, monospace; background: var(--accent-soft); padding: 1px 5px; border-radius: 4px; }
+  .card {
+    background: var(--surface); border: 1px solid var(--border); border-radius: 10px;
+    padding: 4px 18px; margin: 16px 0;
+  }
+  .formula { overflow-x: auto; overflow-y: hidden; padding: 4px 0; }
+  .note { border-left: 3px solid var(--accent); background: var(--accent-soft); padding: 10px 14px; border-radius: 0 8px 8px 0; margin: 16px 0; }
+  .warn { border-left: 3px solid var(--bad); background: var(--bad-soft); padding: 10px 14px; border-radius: 0 8px 8px 0; margin: 16px 0; }
+  .label { font-size: 0.78rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); margin: 14px 0 2px; }
+  .table-scroll { overflow-x: auto; margin: 12px 0; }
+  table { border-collapse: collapse; width: 100%; font-size: 0.94rem; }
+  th, td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--border); vertical-align: top; }
+  th { color: var(--muted); font-weight: 600; font-size: 0.85rem; }
+  td.fail { background: var(--bad-soft); font-weight: 600; }
+  td.ok { background: var(--good-soft); }
+  figure { margin: 20px 0; }
+  figure svg { width: 100%; height: auto; display: block; }
+  figcaption { color: var(--muted); font-size: 0.88rem; margin-top: 6px; }
+  svg text { fill: var(--text); font: 13px system-ui, sans-serif; }
+  svg .muted { fill: var(--muted); }
+  ul { padding-left: 22px; }
+  li { margin: 4px 0; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <h1>Metrics in Breaking SAM 2</h1>
+  <p>What each number means, how it is calculated, and how to read it. Every definition matches
+  <code>src/metrics.py</code>; the numbers combined across clips are in Section 4 of <code>docs/METRICS.md</code>. Thresholds come from <code>configs/benchmark.yaml</code>.</p>
+</header>
+
+<nav class="toc">
+  <a href="#notation">Notation</a>
+  <a href="#frame">1. Per-frame metrics</a>
+  <a href="#clip">2. Per-clip summary</a>
+  <a href="#failure">3. Failure &amp; recovery</a>
+  <a href="#together">4. Reading them together</a>
+</nav>
+
+<h2 id="notation">Notation</h2>
+<p>For one video frame $t$:</p>
+<ul>
+  <li>$G_t$ is the ground-truth (GT) mask: the set of pixels that belong to the target.</li>
+  <li>$P_t$ is the predicted mask: the set of pixels the pipeline labels as the target.</li>
+  <li>$|A|$ is the number of pixels in the set $A$.</li>
+  <li>$\mathcal{T}$ is the set of <strong>annotated</strong> frames. The code allows sparse GT (the protocol planned every 5th–10th frame), but all four datasets of the benchmark annotate every frame, so here $\mathcal{T}$ contains every frame.</li>
+</ul>
+<p>All masks are binary. For indexed masks (DAVIS, M3-VOS, VOST, VOT), <code>--object-id k</code> keeps only pixels with value $k$; without it, every nonzero pixel is foreground.</p>
+<div class="warn"><strong>Missing annotations are skipped.</strong> A frame without a GT file is never treated as an empty mask. Every per-frame metric is computed only for $t \in \mathcal{T}$.</div>
+
+<h2 id="frame">1. Per-frame metrics</h2>
+<p>These are saved for every annotated frame in <code>metrics/frame_metrics.csv</code>.</p>
+
+<h3>1.1 Region similarity <code>J</code> (Jaccard index / IoU)</h3>
+<div class="card formula">
+$$J_t = \frac{|G_t \cap P_t|}{|G_t \cup P_t|}, \qquad J_t = 1 \text{ if } G_t = P_t = \varnothing$$
+</div>
+<p><strong>Meaning.</strong> The share of correct pixels, out of all pixels that either mask calls "target". It measures how well the two regions overlap.</p>
+
+<figure>
+<svg viewBox="0 0 640 210" role="img" aria-label="Two 4 by 4 squares shifted by 2 pixels overlap in a 2 by 2 area, giving J equal to 4 over 28">
+  <g transform="translate(40,20)">
+    <!-- 8x8 grid, 20px cells -->
+    <g stroke="var(--border)" stroke-width="1">
+      <path d="M0 0H160M0 20H160M0 40H160M0 60H160M0 80H160M0 100H160M0 120H160M0 140H160M0 160H160"/>
+      <path d="M0 0V160M20 0V160M40 0V160M60 0V160M80 0V160M100 0V160M120 0V160M140 0V160M160 0V160"/>
+    </g>
+    <rect x="20" y="20" width="80" height="80" fill="var(--gt)" fill-opacity="0.45" stroke="var(--gt)" stroke-width="2"/>
+    <rect x="60" y="60" width="80" height="80" fill="var(--pred)" fill-opacity="0.45" stroke="var(--pred)" stroke-width="2"/>
+    <rect x="60" y="60" width="40" height="40" fill="var(--overlap)" fill-opacity="0.7"/>
+  </g>
+  <g transform="translate(250,40)">
+    <rect x="0" y="0" width="14" height="14" fill="var(--gt)" fill-opacity="0.6"/><text x="22" y="12">GT (G): 16 px</text>
+    <rect x="0" y="28" width="14" height="14" fill="var(--pred)" fill-opacity="0.6"/><text x="22" y="40">Prediction (P): 16 px</text>
+    <rect x="0" y="56" width="14" height="14" fill="var(--overlap)" fill-opacity="0.8"/><text x="22" y="68">Intersection: 4 px</text>
+    <text x="0" y="104">Union = 16 + 16 − 4 = 28 px</text>
+    <text x="0" y="132" style="font-weight:600">J = 4 / 28 ≈ 0.14</text>
+  </g>
+</svg>
+<figcaption>A shift of only 2 pixels in each direction leaves little overlap. For small or thin objects, $J$ falls very fast.</figcaption>
+</figure>
+
+<div class="table-scroll"><table>
+  <tr><th>$J$</th><th>Typical reading</th></tr>
+  <tr><td>$\ge 0.8$</td><td>Good segmentation; errors mostly at the edges.</td></tr>
+  <tr><td>$0.5$ – $0.8$</td><td>Target found, but a large part is missing or extra.</td></tr>
+  <tr><td>$&lt; 0.5$</td><td>Counted as a failed frame by the failure rule (Section 3).</td></tr>
+  <tr><td>$0$</td><td>No overlap: target lost, or a different object is tracked.</td></tr>
+</table></div>
+<ul>
+  <li>$J$ is <strong>stricter for small and thin objects</strong>. A few pixels of shift destroy most of the overlap of a thin liquid stream; a large object hardly changes.</li>
+  <li>If the target leaves the frame ($G_t = \varnothing$), $J_t = 1$ only when the prediction is also empty; any leftover prediction gives $J_t = 0$. This is how <em>false-positive persistence</em> shows up.</li>
+</ul>
+
+<h3>1.2 Boundary accuracy <code>F</code></h3>
+<p>$F$ checks whether the <em>contours</em> of the two masks are in the same place, allowing a small distance error.</p>
+
+<p class="label">Step 1 — boundary maps</p>
+<p>A pixel is a boundary pixel if its value differs from its east, south, or south-east neighbour (the DAVIS <code>seg2bmap</code> rule). Call the maps $\partial G_t$ and $\partial P_t$. Mask edges touching the image border are not counted.</p>
+
+<p class="label">Step 2 — tolerance radius</p>
+<div class="card formula">
+$$r = \max\!\left(1,\; \left\lceil \tau \sqrt{H^2 + W^2}\, \right\rceil\right) \text{ pixels}, \qquad \tau = 0.008$$
+</div>
+<p>For DAVIS 480p ($854\times480$): $r = \lceil 0.008 \cdot 979.7 \rceil = 8$ px. For 1080p: $r = 18$ px. The radius grows with image size, so $F$ is comparable across resolutions.</p>
+
+<p class="label">Step 3 — precision, recall, F</p>
+<p>Let $D_r(\cdot)$ be dilation with a disk of radius $r$ ("everything within $r$ pixels").</p>
+<div class="card formula">
+$$\text{Precision}_t = \frac{|\partial P_t \cap D_r(\partial G_t)|}{|\partial P_t|}, \qquad \text{Recall}_t = \frac{|\partial G_t \cap D_r(\partial P_t)|}{|\partial G_t|}$$
+$$F_t = \frac{2\,\text{Precision}_t\,\text{Recall}_t}{\text{Precision}_t + \text{Recall}_t}$$
+</div>
+<p>Special cases: both boundaries empty → $F_t = 1$. Only one empty → $F_t = 0$.</p>
+<ul>
+  <li><strong>Precision:</strong> how much of the predicted contour is near a real contour. Low precision = extra edges (background leaking in, noise blobs).</li>
+  <li><strong>Recall:</strong> how much of the real contour is found. Low recall = parts of the outline are missing (e.g. a thin part cut off).</li>
+  <li>$F$ is the <strong>harmonic mean</strong>, so it is low when <em>either</em> is low. Precision 0.9 and recall 0.6 give $F = 2\cdot0.54/1.5 = 0.72$, below the simple average 0.75.</li>
+</ul>
+<div class="note">$F$ is sensitive to <strong>shape</strong>; $J$ is sensitive to <strong>area</strong>. A blob in the right place with a smooth, wrong outline can have a good $J$ and a poor $F$ — common for smoke, flames, and pouring liquid. When a mask lags behind a changing contour, $F$ usually drops before $J$.</div>
+
+<h3>1.3 Combined score <code>J&amp;F</code></h3>
+<div class="card formula">$$(J\&F)_t = \frac{J_t + F_t}{2}$$</div>
+<p>The standard single number in DAVIS-style papers. Use it for headline tables, but look at $J$ and $F$ separately to explain <em>why</em> a clip fails.</p>
+
+<h3>1.4 Signed area error</h3>
+<div class="card formula">$$\text{AreaErr}_t = \frac{|P_t| - |G_t|}{|G_t|}, \qquad \text{undefined if } |G_t| = 0$$</div>
+<ul>
+  <li><strong>$&gt; 0$:</strong> prediction too large (over-segmentation, background takeover). $+1.0$ = twice the true area.</li>
+  <li><strong>$&lt; 0$:</strong> prediction too small (target shrinking or lost). $-1.0$ = empty prediction.</li>
+  <li><strong>$\approx 0$ with low $J$:</strong> right size, <em>wrong place</em> — identity switch or drift to a similar object.</li>
+</ul>
+<p>The sign gives the <em>direction</em> of the error, which $J$ cannot give.</p>
+
+<h3>1.5 Fragmentation</h3>
+<div class="card formula">$$\text{Fragments}_t = \text{number of 8-connected components in } P_t$$</div>
+<p>How many separate pieces the prediction has. A normal single-object mask gives <strong>1</strong> (not 0); an empty prediction gives 0.</p>
+<p>Values above 1 mean the mask has split. This is not always an error: a pouring liquid or torn dough can really split. Compare with the GT before calling it "mask fragmentation". Stray blobs far from the target also raise this number.</p>
+
+<h3>1.6 Temporal IoU (prediction stability)</h3>
+<div class="card formula">$$\text{TIoU}_t = \frac{|P_{t-1} \cap P_t|}{|P_{t-1} \cup P_t|}$$</div>
+<p>Computed at annotated frames $t$, using the prediction of the frame just before, when it exists. It does <strong>not</strong> use GT.</p>
+<ul>
+  <li>High TIoU: the mask changes smoothly. Low TIoU: flicker or a sudden jump — but fast real motion also lowers it.</li>
+  <li><strong>High TIoU + falling $J$:</strong> stable but wrong. The model keeps its old memory while the object changes (boundary lag, "stuck" mask).</li>
+  <li><strong>Low TIoU + falling $J$:</strong> unstable; the target is lost suddenly.</li>
+</ul>
+
+<h2 id="clip">2. Per-clip summary</h2>
+<p><code>metrics/summary_metrics.json</code> aggregates the per-frame rows. Let the annotated frames be $t_0 &lt; t_1 &lt; \dots &lt; t_{N-1}$. By the protocol, $t_0 = 0$ and $G_0 \ne \varnothing$.</p>
+<div class="table-scroll"><table>
+  <tr><th>Field</th><th>Formula</th><th>Meaning</th></tr>
+  <tr><td><code>initialization_j</code>, <code>_f</code>, <code>_j_and_f</code></td><td>value at $t_0$</td><td>First-frame mask quality. Low = <strong>initialization</strong> failed (bad box, or wrong Grounding DINO detection).</td></tr>
+  <tr><td><code>mean_j</code>, <code>mean_f</code>, <code>mean_j_and_f</code></td><td>$\frac{1}{N}\sum_i J_{t_i}$ (etc.)</td><td>Average over all annotated frames.</td></tr>
+  <tr><td><code>propagation_mean_j</code></td><td>$\frac{1}{N-1}\sum_{i\ge1} J_{t_i}$</td><td>Average $J$ <strong>without</strong> frame 0 — tracking quality only.</td></tr>
+  <tr><td><code>worst_j</code></td><td>$\min_i J_{t_i}$</td><td>The single worst moment.</td></tr>
+  <tr><td><code>mean_absolute_area_error</code></td><td>mean $|\text{AreaErr}_t|$ where $|G_t|&gt;0$</td><td>Typical size error in either direction.</td></tr>
+  <tr><td><code>mean_fragments</code></td><td>mean $\text{Fragments}_t$</td><td>Typical number of mask pieces.</td></tr>
+  <tr><td><code>mean_temporal_iou</code></td><td>mean of defined $\text{TIoU}_t$</td><td>Typical frame-to-frame stability.</td></tr>
+</table></div>
+<div class="note"><strong>Keep initialization and propagation separate.</strong> For <code>grounded_sam2</code>, a Grounding DINO miss gives empty masks for every frame, so $J_{t_0}=0$ and the whole clip fails — but SAM 2 never tracked. Report these as <em>detection failures</em>, and compare <code>propagation_mean_j</code> only between runs whose initialization succeeded.</div>
+<p><strong>Caveat about means.</strong> Means are over <em>annotated</em> frames. In this benchmark every frame is annotated, so they are plain frame averages. With sparse GT that is denser near the event, the event would get more weight.</p>
+
+<h2 id="failure">3. Temporal failure analysis</h2>
+<p>A mean hides <em>when</em> a clip breaks. The failure rule turns the $J$ curve into an event time. It was fixed before the experiments: <code>failure_iou = 0.5</code>, <code>failure_consecutive = 2</code>.</p>
+
+<h3>3.1 First failure</h3>
+<div class="card formula">$$t_{\text{fail}} = \min\{\, t_i : J_{t_i} &lt; 0.5 \;\text{and}\; J_{t_{i+1}} &lt; 0.5 \,\}$$</div>
+<p>In general: the first frame of the first run of $k=2$ <strong>consecutive annotated observations</strong> strictly below the threshold.</p>
+<ul>
+  <li>Two observations stop one noisy frame from counting as a failure.</li>
+  <li>If no run exists: <code>first_failure_frame = null</code>, <code>failure_censored = true</code> — the clip survived to the end.</li>
+</ul>
+
+<h3>3.2 Recovery</h3>
+<p>After a failure, recovery is the first frame of the first run of 2 consecutive annotated observations with $J \ge 0.5$ (searching after $t_{\text{fail}}$). It is only defined when a failure happened.</p>
+
+<h3>3.3 Example</h3>
+<figure>
+<svg viewBox="0 0 640 230" role="img" aria-label="J curve over frames 0 to 20: 0.9, 0.4, 0.3, 0.8, 0.9. Failure at frame 5, recovery at frame 15.">
+  <g transform="translate(60,20)">
+    <rect x="0" y="80" width="520" height="80" fill="var(--bad-soft)"/>
+    <line x1="0" y1="80" x2="520" y2="80" stroke="var(--bad)" stroke-dasharray="5 4" stroke-width="1.5"/>
+    <text x="524" y="84" class="muted">0.5</text>
+    <line x1="0" y1="160" x2="520" y2="160" stroke="var(--border)"/>
+    <line x1="0" y1="0" x2="0" y2="160" stroke="var(--border)"/>
+    <text x="-30" y="4" class="muted">1.0</text><text x="-22" y="164" class="muted">0</text>
+    <polyline fill="none" stroke="var(--accent)" stroke-width="2.5"
+      points="0,16 130,96 260,112 390,32 520,16"/>
+    <g fill="var(--accent)">
+      <circle cx="0" cy="16" r="5"/><circle cx="390" cy="32" r="5"/><circle cx="520" cy="16" r="5"/>
+    </g>
+    <g fill="var(--bad)"><circle cx="130" cy="96" r="6"/><circle cx="260" cy="112" r="6"/></g>
+    <g class="muted">
+      <text x="-4" y="182">0</text><text x="126" y="182">5</text><text x="252" y="182">10</text>
+      <text x="382" y="182">15</text><text x="512" y="182">20</text>
+    </g>
+    <text x="230" y="204" class="muted">annotated frame</text>
+    <text x="100" y="72" style="font-weight:600;fill:var(--bad)">first failure = 5</text>
+    <text x="352" y="60" style="font-weight:600">recovery = 15</text>
+  </g>
+</svg>
+<figcaption>Frames 5 and 10 are both below 0.5 → failure at 5. Frames 15 and 20 are both ≥ 0.5 → recovery at 15. <code>worst_j</code> = 0.3.</figcaption>
+</figure>
+<div class="table-scroll"><table>
+  <tr><th>Frame</th><td>0</td><td>5</td><td>10</td><td>15</td><td>20</td></tr>
+  <tr><th>$J$</th><td class="ok">0.9</td><td class="fail">0.4</td><td class="fail">0.3</td><td class="ok">0.8</td><td class="ok">0.9</td></tr>
+</table></div>
+
+<h3>3.4 How to interpret failure times</h3>
+<ul>
+  <li><strong>Time to failure</strong> (research question i — which disruption breaks SAM 2 earliest): align clips by their event time and compare $t_{\text{fail}} - t_{\text{event}}$ in seconds (using the clip's fps).</li>
+  <li><strong>Abrupt vs. gradual</strong> (question ii): look at the continuous $J$ curve near $t_{\text{fail}}$. A sharp drop with low TIoU is abrupt; a slow decline with high TIoU is gradual drift.</li>
+  <li><strong>Recoverable</strong> (question ii): a recovery frame means SAM 2's memory found the target again; no recovery means a permanent error.</li>
+  <li><strong>Censored clips</strong> did not fail. Do not replace their failure time with the clip length and average it — that makes the model look worse. Report the count of censored clips, or use a survival method such as a Kaplan–Meier curve.</li>
+  <li><strong>Sampling:</strong> here every frame is annotated, so "two consecutive observations" are two consecutive frames at the clip's frame rate (VOST is sampled at 5 fps, so a failure shorter than 0.2 s can still be missed). With GT only every 10th frame, the failure would have to last about 10–20 frames, and a short failure between two annotated frames could be missed.</li>
+  <li>The binary rule is only a summary. Always keep and show the continuous curves (<code>j_curve.png</code>, <code>f_curve.png</code>, <code>j_and_f_curve.png</code>).</li>
+</ul>
+
+<h2 id="together">4. Reading the metrics together</h2>
+<div class="table-scroll"><table>
+  <tr><th>Pattern</th><th>Likely failure mode</th></tr>
+  <tr><td>Low $J$ at frame 0</td><td>Initialization failure (wrong box or detection).</td></tr>
+  <tr><td>$J\to0$, AreaErr $\to -1$</td><td>Target loss: the mask disappears.</td></tr>
+  <tr><td>Low $J$, AreaErr $\gg 0$</td><td>Background takeover or over-segmentation.</td></tr>
+  <tr><td>Low $J$, AreaErr $\approx 0$</td><td>Identity switch / mask on a similar object.</td></tr>
+  <tr><td>Good $J$, low $F$, high TIoU</td><td>Boundary lag: the mask does not follow shape change.</td></tr>
+  <tr><td>Fragments $&gt; 1$ while GT is one piece</td><td>Mask fragmentation.</td></tr>
+  <tr><td>$J = 0$ on frames where GT is empty</td><td>False-positive persistence after the target leaves.</td></tr>
+</table></div>
+<p>These patterns are hints for the human-authored qualitative labels, not automatic labels. Borderline cases need a second reviewer, as the protocol says.</p>
+
+</div>
+</body>
+</html>

@@ -1,0 +1,11 @@
+numpy>=1.24,<3
+opencv-python>=4.8,<5
+Pillow>=10,<12
+PyYAML>=6,<7
+remotezip>=0.12,<1   # per-clip VOST downloads, see docs/DATA.md
+matplotlib>=3.8,<4
+transformers==4.50.0
+torch>=2.5.1
+torchvision>=0.20.1
+sam-2 @ git+https://github.com/facebookresearch/sam2.git@2b90b9f5ceec907a1c18123530e92e794ad901a4
+pytest>=8,<9

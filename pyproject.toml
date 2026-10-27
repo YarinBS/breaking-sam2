@@ -1,0 +1,9 @@
+[project]
+name = "breaking-sam2"
+version = "0.1.0"
+description = "A reproducible stress-test benchmark for SAM 2 video segmentation"
+requires-python = ">=3.10"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]

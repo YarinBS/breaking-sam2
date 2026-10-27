@@ -8,6 +8,7 @@ __pycache__/
 build/
 dist/
 downloads/
+*.part
 *.egg-info/
 .eggs/
 pip-wheel-metadata/
